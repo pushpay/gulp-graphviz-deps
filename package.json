@@ -1,0 +1,44 @@
+{
+  "name": "gulp-graphviz-deps",
+  "description": "Generates a graphviz (\"dot\") graph from your gulp tasks' dependencies",
+  "version": "0.1.0",
+  "homepage": "https://github.com/Pushpay/gulp-graphviz-deps",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/Pushpay/gulp-graphviz-deps.git"
+  },
+  "author": {
+    "name": "Pushpay Developers",
+    "url": "https://pushpay.com/"
+  },
+  "main": "./index.js",
+  "keywords": [
+    "gulpplugin"
+  ],
+  "scripts": {},
+  "engines": {
+    "node": ">= 0.8.0"
+  },
+  "licenses": [
+    {
+      "type": "MIT"
+    }
+  ],
+  "readme": "",
+  "readmeFilename": "README.md",
+  "bugs": {
+    "url": "https://github.com/Pushpay/gulp-graphviz-deps/issues"
+  },
+  "_id": "gulp-graphviz-deps@0.1.0",
+  "_from": "gulp-graphviz-deps@*",
+  "dependencies": {
+    "gulp": "^3.9.0"
+  },
+  "devDependencies": {
+    "gulp-mocha": "^2.1.3",
+    "gulp-shell": "^0.4.2",
+    "gulp-tsc": "^1.0.0",
+    "mocha": "^2.2.5",
+    "typescript": "^1.5.0-beta"
+  }
+}
