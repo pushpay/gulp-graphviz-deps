@@ -1,6 +1,6 @@
 ///<reference path="typings/node/node.d.ts"/>
 ///<reference path="typings/gulp/gulp.d.ts"/>
-import gulp = require('gulp');
+import gulp = require("gulp");
 
 module Infrastructure {
 	export interface Props {
@@ -19,7 +19,7 @@ module Infrastructure {
 			if (!propNames.length) {
 				return "";
 			}
-			return ` [${propNames.map(x => `${x}="${this.props[x]}"`).join(',') }]`;
+			return ` [${propNames.map(x => `${x}="${this.props[x]}"`).join(",") }]`;
 		}
 
 		toString(): string {
@@ -71,6 +71,7 @@ interface StyleRule {
 interface Options {
 	codeTooltip: boolean;
 	styleRules: StyleRule[];
+	implicitDependencies : StyleRule[];
 }
 
 //copies any properties that target doesn't have from src to target, won't overwrite existing properties
@@ -88,7 +89,7 @@ function processTasks(tasks: gulp.Task[], options: Options): Infrastructure.Grap
 		var node = new Infrastructure.Node(task.name);
 
 		if (options.codeTooltip) {
-			node.props["tooltip"] = task.fn.toString().replace(/\r?\n/g, '&#10;').replace(/"/g, '\\"');
+			node.props["tooltip"] = task.fn.toString().replace(/\r?\n/g, "&#10;").replace(/"/g, "\\\"");
 		}
 
 		options.styleRules
@@ -105,7 +106,29 @@ function processTasks(tasks: gulp.Task[], options: Options): Infrastructure.Grap
 			graph.components.push(edge);
 		});
 
-		//todo: implicit dependencies like watch and runSequence
+		//implicit dependencies
+
+		var oneLineFn = task.fn && task.fn.toString().replace(/\s+/g, " ");
+
+		options.implicitDependencies
+			.forEach(r => {
+				r.matcher.lastIndex = 0;
+				var m : string[];
+				while ((m = r.matcher.exec(oneLineFn)) !== null) {
+					m.splice(0,1);
+					var [match] = m.filter(x=>!!x).reverse();
+					var deps = eval("["+match+"]");
+					deps.forEach(d=>{
+						var edge = new Infrastructure.Edge(task.name, d);
+						apply(r.styles, edge.props);
+						graph.components.push(edge);
+					});
+					if(!r.matcher.global){
+						break;
+					}
+				}
+				
+			});
 	});
 
 	//todo: dependencies that don't exist
@@ -117,10 +140,14 @@ var defaults: Options = {
 	codeTooltip: true,
 	styleRules: [
 		{ matcher: /default/, styles: { shape: "doublecircle" } },
-		{ matcher: /watch/, styles: { shape:'rarrow' } },
-		{ matcher: /js|script|compile/, styles: { fillcolor: '#FEDA3E' } },
-		{ matcher: /css|style|less|sass/, styles: { fillcolor: '#118EC4'} },
-		{ matcher: /test|spec|unit/, styles: { fillcolor: '#B29259', shape:'tab' } }
+		{ matcher: /watch/, styles: { shape:"rarrow" } },
+		{ matcher: /js|script|compile/, styles: { fillcolor: "#FEDA3E" } },
+		{ matcher: /css|style|less|sass/, styles: { fillcolor: "#118EC4"} },
+		{ matcher: /test|spec|unit/, styles: { fillcolor: "#B29259", shape:"tab" } }
+	],
+	implicitDependencies: [
+		{ matcher: /gulp.watch\(\s*[^;]*?\[([^;]+)\]\s*\)/g, styles: { color: "#999999", style: "dashed"  } },
+		{ matcher: /runSequence\(\s*\[([^;]+)\]\s*\)/g, styles: { color: "#ff9999", style: "dashed"  } }
 	]
 }
 

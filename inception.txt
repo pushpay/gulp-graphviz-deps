@@ -18,6 +18,7 @@ digraph Dependencies
       "test" -> "compile-tests"
       "test" -> "compile"
 
-    "watch-test" [tooltip="function () {&#10;    return gulp.watch('*.ts', {&#10;        debounceDelay: 2000&#10;    }, 'test');&#10;}",shape="rarrow",fillcolor="#B29259",style="filled"]
+    "watch-test" [tooltip="function () {&#10;    return gulp.watch('*.ts', {&#10;        debounceDelay: 2000&#10;    }, ['test']);&#10;}",shape="rarrow",fillcolor="#B29259",style="filled"]
       "watch-test" -> "suppress-errors"
+      "watch-test" -> "test" [color="#999999",style="dashed"]
 }

@@ -9,21 +9,23 @@ gulp.task('default', ['compile']);
 gulp.task('compile', function() {
     return gulp.src('index.ts')
         .pipe(tsc({
+            tmpdir: 'tmp',
             target: 'ES5',
         }))
         .pipe(gulp.dest('.'));
 });
 
-gulp.task('compile-tests', function() {
+gulp.task('compile-tests', ['compile'], function() {
     return gulp.src('tests.ts')
         .pipe(tsc({
             out: 'tests.js',
+            tmpdir: 'tmp',
             target: 'ES5',
         }))
         .pipe(gulp.dest('.'));
 });
 
-gulp.task('test', ['compile-tests', 'compile'], function() {
+gulp.task('test', ['compile-tests'], function() {
     return gulp.src('tests.js', {
             read: false
         })
@@ -31,7 +33,7 @@ gulp.task('test', ['compile-tests', 'compile'], function() {
 });
 
 gulp.task('watch-test', ['suppress-errors'], function() {
-    return gulp.watch('*.ts', {
+    return gulp.watch(['index.ts', 'tests.ts'], {
         debounceDelay: 2000
     }, ['test']);
 });
