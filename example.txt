@@ -1,0 +1,18 @@
+digraph Dependencies
+{
+    graph [rankdir="LR",tooltip=" "]
+
+    "build" [fillcolor="white",style="filled"]
+      "build" -> "build-js"
+      "build" -> "build-css"
+
+    "build-css" [fillcolor="#118EC4",style="filled"]
+      "build-css" -> "build-sprites"
+
+    "build-js" [fillcolor="#FEDA3E",style="filled"]
+
+    "build-sprites" [fillcolor="white",style="filled"]
+
+    "default" [fillcolor="white",shape="doublecircle",style="filled"]
+      "default" -> "build"
+}

@@ -1,24 +1,24 @@
 digraph Dependencies
 {
-    graph [rankdir=LR,tooltip=" "]
+    graph [rankdir="LR",tooltip=" "]
 
-    "compile" [tooltip="function () {&#10;    return gulp.src('index.ts')&#10;        .pipe(tsc({&#10;            target: 'ES5',&#10;        }))&#10;        .pipe(gulp.dest('.'));&#10;}",fillcolor="#FEDA3E",style="filled"]
+    "compile" [fillcolor="#FEDA3E",style="filled",tooltip="function () {&#10;    return gulp.src('index.ts')&#10;        .pipe(tsc({&#10;            tmpdir: 'tmp',&#10;            target: 'ES5',&#10;        }))&#10;        .pipe(gulp.dest('.'));&#10;}"]
 
-    "compile-tests" [tooltip="function () {&#10;    return gulp.src('tests.ts')&#10;        .pipe(tsc({&#10;            out: 'tests.js',&#10;            target: 'ES5',&#10;        }))&#10;        .pipe(gulp.dest('.'));&#10;}",fillcolor="#FEDA3E",shape="tab",style="filled"]
+    "compile-tests" [fillcolor="#FEDA3E",shape="tab",style="filled",tooltip="function () {&#10;    return gulp.src('tests.ts')&#10;        .pipe(tsc({&#10;            out: 'tests.js',&#10;            tmpdir: 'tmp',&#10;            target: 'ES5',&#10;        }))&#10;        .pipe(gulp.dest('.'));&#10;}"]
+      "compile-tests" -> "compile"
 
-    "default" [tooltip="function () {}",shape="doublecircle",style="filled",fillcolor="white"]
+    "default" [fillcolor="white",shape="doublecircle",style="filled",tooltip="function () {}"]
       "default" -> "compile"
 
-    "inception" [tooltip="function () {&#10;    var myGraphViz = require('./index.js')();&#10;    fs.writeFileSync('inception.txt', myGraphViz);&#10;    console.log('Wrote my own dependencies as a graphviz document to inception.txt. I am about to try running dot over this file, if dot is not in the path this will fail');&#10;&#10;    return gulp.src('inception.txt')&#10;        .pipe(shell('dot inception.txt -O -Tpng -Tsvg'));&#10;}",style="filled",fillcolor="white"]
+    "inception" [fillcolor="white",style="filled",tooltip="function () {&#10;    var myGraphViz = require('./index.js')();&#10;    fs.writeFileSync('inception.txt', myGraphViz);&#10;    console.log('Wrote my own dependencies as a graphviz document to inception.txt. I am about to try running dot over this file, if dot is not in the path this will fail');&#10;&#10;    return gulp.src('inception.txt')&#10;        .pipe(shell('dot inception.txt -O -Tpng -Tsvg'));&#10;}"]
       "inception" -> "compile"
 
-    "suppress-errors" [tooltip="function () {&#10;    function monkeyPatchPipe(o) {&#10;        while (!o.hasOwnProperty('pipe')) {&#10;            o = Object.getPrototypeOf(o);&#10;            if (!o) {&#10;                return;&#10;            }&#10;        }&#10;        var originalPipe = o.pipe;&#10;        var newPipe = function() {&#10;            var result = originalPipe.apply(this, arguments);&#10;&#10;            if (!result.pipe['monkey patched for suppress-errors']) {&#10;                monkeyPatchPipe(result);&#10;            }&#10;&#10;            return result.on('error', function(err) {&#10;                console.log(err);&#10;                this.emit('end');&#10;            });&#10;        };&#10;        newPipe['monkey patched for suppress-errors'] = true;&#10;        o.pipe = newPipe;&#10;    }&#10;    monkeyPatchPipe(gulp.src(''));&#10;}",style="filled",fillcolor="white"]
+    "suppress-errors" [fillcolor="white",style="filled",tooltip="function () {&#10;    function monkeyPatchPipe(o) {&#10;        while (!o.hasOwnProperty('pipe')) {&#10;            o = Object.getPrototypeOf(o);&#10;            if (!o) {&#10;                return;&#10;            }&#10;        }&#10;        var originalPipe = o.pipe;&#10;        var newPipe = function() {&#10;            var result = originalPipe.apply(this, arguments);&#10;&#10;            if (!result.pipe['monkey patched for suppress-errors']) {&#10;                monkeyPatchPipe(result);&#10;            }&#10;&#10;            return result.on('error', function(err) {&#10;                console.log(err);&#10;                this.emit('end');&#10;            });&#10;        };&#10;        newPipe['monkey patched for suppress-errors'] = true;&#10;        o.pipe = newPipe;&#10;    }&#10;    monkeyPatchPipe(gulp.src(''));&#10;}"]
 
-    "test" [tooltip="function () {&#10;    return gulp.src('tests.js', {&#10;            read: false&#10;        })&#10;        .pipe(mocha());&#10;}",fillcolor="#B29259",shape="tab",style="filled"]
+    "test" [fillcolor="#B29259",shape="tab",style="filled",tooltip="function () {&#10;    return gulp.src('tests.js', {&#10;            read: false&#10;        })&#10;        .pipe(mocha());&#10;}"]
       "test" -> "compile-tests"
-      "test" -> "compile"
 
-    "watch-test" [tooltip="function () {&#10;    return gulp.watch('*.ts', {&#10;        debounceDelay: 2000&#10;    }, ['test']);&#10;}",shape="rarrow",fillcolor="#B29259",style="filled"]
+    "watch-test" [fillcolor="#B29259",shape="rarrow",style="filled",tooltip="function () {&#10;    return gulp.watch(['index.ts', 'tests.ts'], {&#10;        debounceDelay: 2000&#10;    }, ['test']);&#10;}"]
       "watch-test" -> "suppress-errors"
       "watch-test" -> "test" [color="#999999",style="dashed"]
 }
