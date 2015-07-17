@@ -72,6 +72,7 @@ interface Options {
 	codeTooltip: boolean;
 	styleRules: StyleRule[];
 	implicitDependencies : StyleRule[];
+	missingDependencyStyles: any;
 }
 
 //copies any properties that target doesn't have from src to target, won't overwrite existing properties
@@ -131,7 +132,27 @@ function processTasks(tasks: gulp.Task[], options: Options): Infrastructure.Grap
 			});
 	});
 
-	//todo: dependencies that don't exist
+	//Dependencies that don't exist
+	var targets = {};
+	graph.components.forEach(x => {
+		if(x instanceof Infrastructure.Edge){
+			targets[x.to] = true;
+		}
+	});
+	graph.components.forEach(x => {
+		if(x instanceof Infrastructure.Node){
+			delete targets[x.name];
+		}
+	});
+
+	Object.getOwnPropertyNames(targets).forEach(x => {
+		var node = new Infrastructure.Node(x);
+		apply(options.missingDependencyStyles, node.props);
+		apply({ style: "filled", fillcolor: "white" }, node.props);
+
+		graph.components.push(node);
+	});
+
 
 	return graph;
 }
@@ -148,7 +169,8 @@ var defaults: Options = {
 	implicitDependencies: [
 		{ matcher: /gulp.watch\(\s*[^;]*?\[([^;]+)\]\s*\)/g, styles: { color: "#999999", style: "dashed"  } },
 		{ matcher: /runSequence\(\s*\[([^;]+)\]\s*\)/g, styles: { color: "#ff9999", style: "dashed"  } }
-	]
+	],
+	missingDependencyStyles: { fillcolor: "red" }
 }
 
 export = function (options: Options = <any>{}, gulpOverride?: gulp.Gulp): string {

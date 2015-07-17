@@ -176,6 +176,29 @@ testCase("implicit dependencies with runsequence", gulp => {
       "slow" -> "build-js" [color="#ff9999",style="dashed"]
       "slow" -> "build" [color="#ff9999",style="dashed"]
 }`);
+
+
+	testCase("broken dependencies", gulp => {
+		gulp.task('x', ['y', 'missing'], function() {});
+		gulp.task('y', function() {});
+		gulp.task('z', function() {});
+	},
+		`digraph Dependencies
+{
+    graph [rankdir=LR,tooltip=" "]
+
+    "x" [style="filled",fillcolor="white"]
+      "x" -> "y"
+      "x" -> "missing"
+
+    "y" [style="filled",fillcolor="white"]
+
+    "z" [style="filled",fillcolor="white"]
+
+    "missing" [fillcolor="red",style="filled"]
+}`);
+
+
 });
 
 
