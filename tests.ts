@@ -11,7 +11,7 @@ describe("Graph production tests", function () {
 	},
 		`digraph Dependencies
 {
-    graph [rankdir=LR,tooltip=" "]
+    graph [rankdir="LR",tooltip=" "]
 
     "x" [fillcolor="white",style="filled"]
 
@@ -27,7 +27,7 @@ describe("Graph production tests", function () {
 	},
 		`digraph Dependencies
 {
-    graph [rankdir=LR,tooltip=" "]
+    graph [rankdir="LR",tooltip=" "]
 
     "x" [fillcolor="white",style="filled"]
       "x" -> "y"
@@ -49,7 +49,7 @@ describe("Graph production tests", function () {
 	},
 		`digraph Dependencies
 {
-    graph [rankdir=LR,tooltip=" "]
+    graph [rankdir="LR",tooltip=" "]
 
     "build" [fillcolor="white",style="filled"]
       "build" -> "build-js"
@@ -76,7 +76,7 @@ testCase("implicit dependencies with watch", gulp => {
 	},
 		`digraph Dependencies
 {
-    graph [rankdir=LR,tooltip=" "]
+    graph [rankdir="LR",tooltip=" "]
 
     "build" [fillcolor="white",style="filled"]
       "build" -> "build-js"
@@ -109,7 +109,7 @@ testCase("implicit dependencies with runsequence", gulp => {
 	},
 		`digraph Dependencies
 {
-    graph [rankdir=LR,tooltip=" "]
+    graph [rankdir="LR",tooltip=" "]
 
     "build" [fillcolor="white",style="filled"]
       "build" -> "build-js"
@@ -140,7 +140,7 @@ testCase("implicit dependencies with runsequence", gulp => {
 	},
 		`digraph Dependencies
 {
-    graph [rankdir=LR,tooltip=" "]
+    graph [rankdir="LR",tooltip=" "]
 
     "x" [fillcolor="white",style="filled"]
       "x" -> "y"

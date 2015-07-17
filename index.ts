@@ -5,12 +5,29 @@ import gulp = require("gulp");
 //An object model that renders nicely into GraphViz format
 module GvModels {
 
-	export class Graph {
-		constructor() {
-			this.components = [];
+	export class GraphComponent {
+
+		props: Props = {}
+
+		propsString(): string {
+			var propNames = Object.getOwnPropertyNames(this.props);
+			if (!propNames.length) {
+				return "";
+			}
+			var kvp = propNames
+				.sort((a, b) => a.localeCompare(b))
+				.map(x => `${x}="${this.props[x]}"`);
+
+			return ` [${kvp.join(",") }]`;
 		}
 
-		components: GraphComponent[];
+		toString(): string {
+			return "";
+		}
+	}
+
+	export class Graph extends GraphComponent {
+		components: GraphComponent[] = [];
 
 		addComponents(a: GraphComponent[]) {
 			a.forEach(x => this.components.push(x));
@@ -19,36 +36,15 @@ module GvModels {
 		toString(): string {
 			return `digraph Dependencies
 {
-    graph [rankdir=LR,tooltip=" "]
+    graph${this.propsString() }
 ${this.components.join("\n") }
 }`;
 		}
 	}
 
-	
-	export class GraphComponent {
-		constructor() {
-			this.props = {};
-		}
-
-		props: Props
-
-		propsString(): string {
-			var propNames = Object.getOwnPropertyNames(this.props);
-			if (!propNames.length) {
-				return "";
-			}
-			return ` [${propNames.sort((a,b) => a.localeCompare(b)).map(x => `${x}="${this.props[x]}"`).join(",") }]`;
-		}
-
-		toString(): string {
-			return "";
-		}
-	}
-
 	export class Node extends GraphComponent {
 		constructor(public name: string) {
-			super()
+			super();
 		}
 		toString(): string {
 			return `\n    "${this.name}"${this.propsString() }`;
@@ -57,7 +53,7 @@ ${this.components.join("\n") }
 
 	export class Edge extends GraphComponent {
 		constructor(public from: string, public to: string) {
-			super()
+			super();
 		}
 
 		toString(): string {
@@ -146,6 +142,7 @@ function findBrokenDependencies(currentComponents: GvModels.GraphComponent[], st
 
 function processTasks(tasks: gulp.Task[], options: Options): GvModels.Graph {
 	var graph = new GvModels.Graph();
+	apply(options.graphStyles, graph.props);
 	tasks.forEach(task => {
 		graph.components.push(buildNode(task, options));
 
@@ -165,6 +162,7 @@ interface Options {
 	styleRules?: StyleRule[];
 	implicitDependencies?: StyleRule[];
 	missingDependencyStyles?: Styles;
+	graphStyles?: Styles;
 }
 
 interface StyleRule {
@@ -189,7 +187,8 @@ var defaults: Options = {
 		{ matcher: /gulp.watch\(\s*[^;]*?\[([^;]+)\]\s*\)/g, styles: { color: "#999999", style: "dashed"  } },
 		{ matcher: /runSequence\(\s*\[([^;]+)\]\s*\)/g, styles: { color: "#ff9999", style: "dashed"  } }
 	],
-	missingDependencyStyles: { fillcolor: "red" }
+	missingDependencyStyles: { fillcolor: "red" },
+	graphStyles: { rankdir:"LR", tooltip:" "}
 }
 
 export = function (options: Options = {}, gulpOverride?: gulp.Gulp): string {
