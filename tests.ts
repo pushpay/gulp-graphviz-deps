@@ -58,11 +58,11 @@ describe("Graph production tests", function () {
 {
     graph [rankdir=LR,tooltip=" "]
 
-    "x" [style="filled",fillcolor="white"]
+    "x" [fillcolor="white",style="filled"]
 
-    "y" [style="filled",fillcolor="white"]
+    "y" [fillcolor="white",style="filled"]
 
-    "z" [style="filled",fillcolor="white"]
+    "z" [fillcolor="white",style="filled"]
 }`);
 
 	testCase("basic example with dependencies", gulp => {
@@ -74,13 +74,13 @@ describe("Graph production tests", function () {
 {
     graph [rankdir=LR,tooltip=" "]
 
-    "x" [style="filled",fillcolor="white"]
+    "x" [fillcolor="white",style="filled"]
       "x" -> "y"
       "x" -> "z"
 
-    "y" [style="filled",fillcolor="white"]
+    "y" [fillcolor="white",style="filled"]
 
-    "z" [style="filled",fillcolor="white"]
+    "z" [fillcolor="white",style="filled"]
 }`);
 
 
@@ -96,7 +96,7 @@ describe("Graph production tests", function () {
 {
     graph [rankdir=LR,tooltip=" "]
 
-    "build" [style="filled",fillcolor="white"]
+    "build" [fillcolor="white",style="filled"]
       "build" -> "build-js"
       "build" -> "build-css"
 
@@ -105,9 +105,9 @@ describe("Graph production tests", function () {
 
     "build-js" [fillcolor="#FEDA3E",style="filled"]
 
-    "build-sprites" [style="filled",fillcolor="white"]
+    "build-sprites" [fillcolor="white",style="filled"]
 
-    "default" [shape="doublecircle",style="filled",fillcolor="white"]
+    "default" [fillcolor="white",shape="doublecircle",style="filled"]
       "default" -> "build"
 }`);
 
@@ -123,7 +123,7 @@ testCase("implicit dependencies with watch", gulp => {
 {
     graph [rankdir=LR,tooltip=" "]
 
-    "build" [style="filled",fillcolor="white"]
+    "build" [fillcolor="white",style="filled"]
       "build" -> "build-js"
       "build" -> "build-css"
 
@@ -132,12 +132,12 @@ testCase("implicit dependencies with watch", gulp => {
 
     "build-js" [fillcolor="#FEDA3E",style="filled"]
 
-    "build-sprites" [style="filled",fillcolor="white"]
+    "build-sprites" [fillcolor="white",style="filled"]
 
-    "default" [shape="doublecircle",style="filled",fillcolor="white"]
+    "default" [fillcolor="white",shape="doublecircle",style="filled"]
       "default" -> "build"
 
-    "watch" [shape="rarrow",style="filled",fillcolor="white"]
+    "watch" [fillcolor="white",shape="rarrow",style="filled"]
       "watch" -> "build" [color="#999999",style="dashed"]
       "watch" -> "build-js" [color="#999999",style="dashed"]
       "watch" -> "build-css" [color="#999999",style="dashed"]
@@ -156,7 +156,7 @@ testCase("implicit dependencies with runsequence", gulp => {
 {
     graph [rankdir=LR,tooltip=" "]
 
-    "build" [style="filled",fillcolor="white"]
+    "build" [fillcolor="white",style="filled"]
       "build" -> "build-js"
       "build" -> "build-css"
 
@@ -165,12 +165,12 @@ testCase("implicit dependencies with runsequence", gulp => {
 
     "build-js" [fillcolor="#FEDA3E",style="filled"]
 
-    "build-sprites" [style="filled",fillcolor="white"]
+    "build-sprites" [fillcolor="white",style="filled"]
 
-    "default" [shape="doublecircle",style="filled",fillcolor="white"]
+    "default" [fillcolor="white",shape="doublecircle",style="filled"]
       "default" -> "build"
 
-    "slow" [style="filled",fillcolor="white"]
+    "slow" [fillcolor="white",style="filled"]
       "slow" -> "build-sprites" [color="#ff9999",style="dashed"]
       "slow" -> "build-css" [color="#ff9999",style="dashed"]
       "slow" -> "build-js" [color="#ff9999",style="dashed"]
@@ -187,13 +187,13 @@ testCase("implicit dependencies with runsequence", gulp => {
 {
     graph [rankdir=LR,tooltip=" "]
 
-    "x" [style="filled",fillcolor="white"]
+    "x" [fillcolor="white",style="filled"]
       "x" -> "y"
       "x" -> "missing"
 
-    "y" [style="filled",fillcolor="white"]
+    "y" [fillcolor="white",style="filled"]
 
-    "z" [style="filled",fillcolor="white"]
+    "z" [fillcolor="white",style="filled"]
 
     "missing" [fillcolor="red",style="filled"]
 }`);

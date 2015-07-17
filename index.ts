@@ -19,7 +19,7 @@ module Infrastructure {
 			if (!propNames.length) {
 				return "";
 			}
-			return ` [${propNames.map(x => `${x}="${this.props[x]}"`).join(",") }]`;
+			return ` [${propNames.sort((a,b) => a.localeCompare(b)).map(x => `${x}="${this.props[x]}"`).join(",") }]`;
 		}
 
 		toString(): string {
