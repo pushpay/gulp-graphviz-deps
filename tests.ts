@@ -3,51 +3,6 @@
 
 var gvd = require('./index');
 
-class MockGulp {
-	tasks = <gulp.Tasks>{};
-
-	task(name: string, depOrFn: string[]| gulp.ITaskCallback, fn?: gulp.ITaskCallback) {
-		var dep = [];
-
-		if (typeof depOrFn === "function") {
-			fn = <gulp.ITaskCallback>depOrFn;
-		}
-		else {
-			dep = <string[]>depOrFn;
-		}
-
-		this.tasks[name] = {
-			name: name,
-			dep: dep,
-			fn: fn
-		};
-
-	}
-
-	watch:any;
-
-}
-
-function testCase(name: string, setup: (gulp: MockGulp) => void, expected: string) {
-	expected = expected.trim();
-	it(name, () => {
-		var gulp = new MockGulp();
-		setup(gulp);
-
-
-		var result = gvd({ codeTooltip: false }, gulp);
-
-
-		if (result !== expected) {
-			console.error("Unexpected result:");
-			console.error("");
-			console.error(result);
-			throw new Error("Unexpected result");
-		}
-	})
-}
-
-
 describe("Graph production tests", function () {
 	testCase("basic example", gulp => {
 		gulp.task('x', function() {});
@@ -202,3 +157,47 @@ testCase("implicit dependencies with runsequence", gulp => {
 });
 
 
+
+class MockGulp {
+	tasks = <gulp.Tasks>{};
+
+	task(name: string, depOrFn: string[]| gulp.ITaskCallback, fn?: gulp.ITaskCallback) {
+		var dep = [];
+
+		if (typeof depOrFn === "function") {
+			fn = <gulp.ITaskCallback>depOrFn;
+		}
+		else {
+			dep = <string[]>depOrFn;
+		}
+
+		this.tasks[name] = {
+			name: name,
+			dep: dep,
+			fn: fn
+		};
+
+	}
+
+	watch: any;
+
+}
+
+function testCase(name: string, setup: (gulp: MockGulp) => void, expected: string) {
+	expected = expected.trim();
+	it(name, () => {
+		var gulp = new MockGulp();
+		setup(gulp);
+
+
+		var result = gvd({ showTaskCodeAsTooltip: false }, gulp);
+
+
+		if (result !== expected) {
+			console.error("Unexpected result:");
+			console.error("");
+			console.error(result);
+			throw new Error("Unexpected result");
+		}
+	})
+}

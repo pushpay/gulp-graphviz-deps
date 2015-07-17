@@ -2,11 +2,30 @@
 ///<reference path="typings/gulp/gulp.d.ts"/>
 import gulp = require("gulp");
 
-module Infrastructure {
-	export interface Props {
-		[s: string]: string
+//An object model that renders nicely into GraphViz format
+module GvModels {
+
+	export class Graph {
+		constructor() {
+			this.components = [];
+		}
+
+		components: GraphComponent[];
+
+		addComponents(a: GraphComponent[]) {
+			a.forEach(x => this.components.push(x));
+		}
+
+		toString(): string {
+			return `digraph Dependencies
+{
+    graph [rankdir=LR,tooltip=" "]
+${this.components.join("\n") }
+}`;
+		}
 	}
 
+	
 	export class GraphComponent {
 		constructor() {
 			this.props = {};
@@ -46,34 +65,12 @@ module Infrastructure {
 		}
 	}
 
-	export class Graph {
-		constructor() {
-			this.components = [];
-		}
-
-		components: GraphComponent[];
-
-		toString(): string {
-			return `digraph Dependencies
-{
-    graph [rankdir=LR,tooltip=" "]
-${this.components.join("\n") }
-}`;
-		}
+	export interface Props {
+		[s: string]: string
 	}
 }
 
-interface StyleRule {
-	matcher: RegExp;
-	styles: any;
-}
 
-interface Options {
-	codeTooltip: boolean;
-	styleRules: StyleRule[];
-	implicitDependencies : StyleRule[];
-	missingDependencyStyles: any;
-}
 
 //copies any properties that target doesn't have from src to target, won't overwrite existing properties
 function apply(src, target): void {
@@ -82,83 +79,105 @@ function apply(src, target): void {
 		.forEach(x => target[x] = src[x]);
 }
 
+var baseStyles: Styles = { style: "filled", fillcolor: "white" };
 
-function processTasks(tasks: gulp.Task[], options: Options): Infrastructure.Graph {
-	var graph = new Infrastructure.Graph();
-	tasks.forEach(task => {
-		//this node
-		var node = new Infrastructure.Node(task.name);
+function buildNode(task: gulp.Task, options: Options) {
+	var node = new GvModels.Node(task.name);
 
-		if (options.codeTooltip) {
-			node.props["tooltip"] = task.fn.toString().replace(/\r?\n/g, "&#10;").replace(/"/g, "\\\"");
-		}
+	if (options.showTaskCodeAsTooltip) {
+		node.props["tooltip"] = task.fn.toString().replace(/\r?\n/g, "&#10;").replace(/"/g, "\\\"");
+	}
 
-		options.styleRules
-			.filter(r => r.matcher.test(task.name))
-			.forEach(r => apply(r.styles, node.props));
+	options.styleRules
+		.filter(r => r.matcher.test(task.name))
+		.forEach(r => apply(r.styles, node.props));
 
-		apply({style: "filled",fillcolor: "white"}, node.props);
+	apply(baseStyles, node.props);
+	return node;
+}
 
-		graph.components.push(node);
-
-		//edges from this node
-		task.dep && task.dep.forEach(d => {
-			var edge = new Infrastructure.Edge(task.name, d);
-			graph.components.push(edge);
-		});
-
-		//implicit dependencies
-
-		var oneLineFn = task.fn && task.fn.toString().replace(/\s+/g, " ");
-
-		options.implicitDependencies
-			.forEach(r => {
-				r.matcher.lastIndex = 0;
-				var m : string[];
-				while ((m = r.matcher.exec(oneLineFn)) !== null) {
-					m.splice(0,1);
-					var [match] = m.filter(x=>!!x).reverse();
-					var deps = eval("["+match+"]");
-					deps.forEach(d=>{
-						var edge = new Infrastructure.Edge(task.name, d);
-						apply(r.styles, edge.props);
-						graph.components.push(edge);
-					});
-					if(!r.matcher.global){
-						break;
-					}
-				}
-				
+function findImplicitDependencies(task: gulp.Task, implicitDependencyMatcherRules: StyleRule[]): GvModels.Edge[] {
+	var results: GvModels.Edge[] = [];
+	var oneLineFn = task.fn && task.fn.toString().replace(/\s+/g, " ");
+	implicitDependencyMatcherRules.forEach(r => {
+		r.matcher.lastIndex = 0;
+		var m: string[];
+		while ((m = r.matcher.exec(oneLineFn)) !== null) {
+			m.splice(0, 1);
+			var [match] = m.filter(x => !!x).reverse();
+			var deps = eval("[" + match + "]");
+			deps.forEach(d => {
+				var edge = new GvModels.Edge(task.name, d);
+				apply(r.styles, edge.props);
+				results.push(edge);
 			});
-	});
-
-	//Dependencies that don't exist
-	var targets = {};
-	graph.components.forEach(x => {
-		if(x instanceof Infrastructure.Edge){
-			targets[x.to] = true;
+			if (!r.matcher.global) {
+				break;
+			}
 		}
 	});
-	graph.components.forEach(x => {
-		if(x instanceof Infrastructure.Node){
-			delete targets[x.name];
+	return results;
+}
+
+function findBrokenDependencies(currentComponents: GvModels.GraphComponent[], style: Styles): GvModels.Node[]{
+	var nodeTargetMap = {};
+	//collect all the "to" names of every edge
+	currentComponents.forEach(x => {
+		if (x instanceof GvModels.Edge) {
+			nodeTargetMap[x.to] = true;
 		}
 	});
 
-	Object.getOwnPropertyNames(targets).forEach(x => {
-		var node = new Infrastructure.Node(x);
-		apply(options.missingDependencyStyles, node.props);
-		apply({ style: "filled", fillcolor: "white" }, node.props);
-
-		graph.components.push(node);
+	//remove the ones that exist
+	currentComponents.forEach(x => {
+		if (x instanceof GvModels.Node) {
+			delete nodeTargetMap[x.name];
+		}
 	});
 
+	//map the remainer into styled nodes
+	return Object.getOwnPropertyNames(nodeTargetMap).map(x => {
+		var node = new GvModels.Node(x);
+		apply(style, node.props);
+		apply(baseStyles, node.props);
+		return node;
+	});
+}
 
+function processTasks(tasks: gulp.Task[], options: Options): GvModels.Graph {
+	var graph = new GvModels.Graph();
+	tasks.forEach(task => {
+		graph.components.push(buildNode(task, options));
+
+		if (task.dep) {
+			graph.addComponents(task.dep.map(d => new GvModels.Edge(task.name, d)));
+		}
+
+		graph.addComponents(findImplicitDependencies(task, options.implicitDependencies));
+	});
+
+	graph.addComponents(findBrokenDependencies(graph.components, options.missingDependencyStyles));
 	return graph;
 }
 
+interface Options {
+	showTaskCodeAsTooltip?: boolean;
+	styleRules?: StyleRule[];
+	implicitDependencies?: StyleRule[];
+	missingDependencyStyles?: Styles;
+}
+
+interface StyleRule {
+	matcher: RegExp;
+	styles: Styles;
+}
+
+interface Styles {
+	[s: string]: string;
+}
+
 var defaults: Options = {
-	codeTooltip: true,
+	showTaskCodeAsTooltip: true,
 	styleRules: [
 		{ matcher: /default/, styles: { shape: "doublecircle" } },
 		{ matcher: /watch/, styles: { shape:"rarrow" } },
@@ -173,7 +192,7 @@ var defaults: Options = {
 	missingDependencyStyles: { fillcolor: "red" }
 }
 
-export = function (options: Options = <any>{}, gulpOverride?: gulp.Gulp): string {
+export = function (options: Options = {}, gulpOverride?: gulp.Gulp): string {
 	apply(defaults, options);
 
 	var g = gulpOverride || gulp;
